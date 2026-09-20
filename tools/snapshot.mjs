@@ -58,7 +58,21 @@ if (!Array.isArray(raw)) {
   process.exit(1);
 }
 
-const repos = raw.map((r) => Object.fromEntries(FIELDS.map((k) => [k, r[k] ?? null])));
+// 必须排除导航页自己的仓库，原因有两个：
+//   1. 页面上本来就不该列出自己
+//   2. 它每次被推送 pushed_at 都会变，而本 workflow 的提交又算一次推送
+//      → 快照每天都变 → 每天都产生一次无意义的自动提交和 Pages 重建
+const selfName = `${USER}.github.io`.toLowerCase();
+const skipped = [];
+const kept = raw.filter((r) => {
+  if (String(r.name).toLowerCase() === selfName) {
+    skipped.push(r.name);
+    return false;
+  }
+  return true;
+});
+
+const repos = kept.map((r) => Object.fromEntries(FIELDS.map((k) => [k, r[k] ?? null])));
 
 const payload = {
   generated_at: new Date().toISOString(),
@@ -71,3 +85,4 @@ await writeFile(OUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
 
 console.log(`已写入 ${OUT}`);
 console.log(`共 ${repos.length} 个仓库，其中开启 Pages 的 ${repos.filter((r) => r.has_pages).length} 个`);
+if (skipped.length) console.log(`已排除导航页自身：${skipped.join(', ')}`);
