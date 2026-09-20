@@ -7,7 +7,7 @@
 
 ## 它怎么做到「自动更新」的
 
-没有构建步骤，没有 GitHub Action，没有定时任务。
+页面本身没有构建步骤。实时数据靠 API，兜底数据靠一份每天自动刷新的快照。
 
 ```
 访客打开页面
@@ -18,7 +18,8 @@
       ↓
 筛选 has_pages = true 的仓库  →  生成卡片
       ↓
-结果缓存到浏览器本地 5 分钟，减少 API 请求
+成功 → 结果缓存到浏览器本地 5 分钟
+失败 → 回落到仓库里的静态快照 repos.json
 ```
 
 所以你新建仓库之后：
@@ -41,6 +42,9 @@
 | `assets/style.css` | 样式，改配色改这里（文件顶部的 `:root` 变量） |
 | `assets/app.js` | 自动发现逻辑，一般不用动 |
 | `links.json` | **你唯一需要经常改的文件**：标题、描述、标签、排序、隐藏 |
+| `repos.json` | 自动生成的静态快照，**不要手改** |
+| `tools/snapshot.mjs` | 生成上面那份快照的脚本 |
+| `.github/workflows/refresh-repos.yml` | 每天自动刷新快照 |
 | `.nojekyll` | 告诉 GitHub Pages 不要跑 Jekyll 处理 |
 
 ## 怎么改内容
@@ -70,7 +74,45 @@
 
 ## 注意事项
 
-- 用的是**未登录**的 GitHub API，每个 IP 每小时 60 次。页面做了 5 分钟本地缓存，
+### ⚠️ GitHub 加速器会让实时同步失效（重要）
+
+如果你或访客开着 **Steam++ / Watt Toolkit** 这类 GitHub 加速器，它们会改 hosts：
+
+```
+127.0.0.1 api.github.com
+127.0.0.1 github.com
+...
+```
+
+于是浏览器认为 `api.github.com` 是个**本机回环地址**，而 Chromium 内核禁止
+公网页面请求回环地址，会直接报错：
+
+```
+Access to fetch at 'https://api.github.com/...' from origin 'https://freeturbo.github.io'
+has been blocked by CORS policy: Permission was denied for this request
+to access the `loopback` address space.
+```
+
+**这不是网页的 bug，也不是 CORS 配置问题**，是加速器的 hosts 劫持 + 浏览器安全策略。
+
+应对办法（页面已经内置）：
+
+- 页面会自动回落到 `repos.json` 静态快照，左下角显示「离线快照 · 日期」，
+  内容最多滞后一天，不会开天窗。
+- 快照由 `refresh-repos.yml` **每天自动刷新**（在 GitHub 的机器上跑，
+  没有 hosts 劫持问题，所以拿得到数据）。
+- 想在自己机器上看到实时版本，就把 `api.github.com` 从加速器的加速名单里去掉，
+  或者用手机流量 / 换个没装加速器的网络打开对比一下。
+
+本地手动跑快照脚本时，如果开着加速器会报证书错误，加个参数即可：
+
+```bash
+node --use-system-ca tools/snapshot.mjs
+```
+
+### 其他
+
+- 实时模式用的是**未登录**的 GitHub API，每个 IP 每小时 60 次。页面做了 5 分钟本地缓存，
   正常浏览完全够用；超限时页面会提示稍后再试，并优先显示上次缓存的结果。
 - 默认**不显示** fork 来的仓库，也会自动排除导航页自己（`FreeTurbo.github.io`）。
 - 仓库有 `homepage` 字段时会优先用那个地址，否则拼 `https://freeturbo.github.io/<仓库名>/`。

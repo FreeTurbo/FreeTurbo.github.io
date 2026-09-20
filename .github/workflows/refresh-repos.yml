@@ -1,0 +1,53 @@
+name: 刷新作品快照
+
+# 页面优先实时读 GitHub API，这个 workflow 只是维护一份兜底快照，
+# 给那些因为开着 GitHub 加速器、浏览器拦掉 API 请求的访客用。
+
+on:
+  schedule:
+    # 每天 UTC 03:17（北京时间 11:17）跑一次
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'links.json'
+      - 'tools/snapshot.mjs'
+      - '.github/workflows/refresh-repos.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-repos
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 生成快照
+        run: node tools/snapshot.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_USER: FreeTurbo
+
+      - name: 有变化才提交
+        run: |
+          if git diff --quiet -- repos.json; then
+            echo "快照没有变化，跳过提交"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repos.json
+          git commit -m "自动刷新作品快照 [skip ci]"
+          git push

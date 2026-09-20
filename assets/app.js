@@ -95,7 +95,23 @@ function demoUrl(repo, opts) {
 let ALL = [];        // 渲染用的项目列表
 let query = '';
 
-/** 从 GitHub API 拉仓库，失败时回落到本地缓存 */
+/**
+ * 读取仓库里的静态快照（repos.json）。
+ *
+ * 用途：浏览器直连 GitHub API 被拦截时兜底。典型场景是访客装了 GitHub
+ * 加速器（Steam++ / Watt Toolkit 之类），它们会把 api.github.com 通过
+ * hosts 指向 127.0.0.1，而 Chromium 禁止公网页面请求「回环地址空间」，
+ * 于是 fetch 直接失败。快照由 .github/workflows/refresh-repos.yml 每天刷新。
+ */
+async function fetchSnapshot() {
+  const res = await fetch('repos.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('no-snapshot');
+  const data = await res.json();
+  const at = data.generated_at ? new Date(data.generated_at).getTime() : null;
+  return { repos: data.repos || [], at };
+}
+
+/** 从 GitHub API 拉仓库，失败时依次回落到本地缓存 → 静态快照 */
 async function fetchRepos(opts) {
   const key = 'ft-portal-cache-v1';
   const ttl = opts.cacheMinutes * 60 * 1000;
@@ -128,8 +144,15 @@ async function fetchRepos(opts) {
     return { repos, source: 'network', at };
 
   } catch (err) {
-    // 网络/限流失败 → 有旧缓存就用旧缓存，没有就抛出
+    // 直连 GitHub API 失败 → 有旧缓存用旧缓存
     if (cached) return { repos: cached.repos, source: 'stale', at: cached.at };
+
+    // 没有缓存 → 用仓库里的静态快照兜底
+    try {
+      const snap = await fetchSnapshot();
+      if (snap.repos.length) return { repos: snap.repos, source: 'snapshot', at: snap.at };
+    } catch { /* 快照也读不到，继续往下抛 */ }
+
     throw err;
   }
 }
@@ -258,7 +281,8 @@ function renderError(err) {
       <h3>${rate ? 'GitHub 接口请求太频繁了' : '没能读取到仓库列表'}</h3>
       <p>${rate
         ? 'GitHub 对未登录的访问有限流（每小时 60 次）。等几分钟再刷新就好。'
-        : '可能是网络问题，也可能是 GitHub 接口暂时不可用。'}</p>
+        : '浏览器没能连上 GitHub 接口。<br>如果你开着 GitHub 加速器（Steam++、Watt Toolkit 等），'
+          + '它会把 api.github.com 指向本机，浏览器会拦截这种请求 —— 关掉加速器再刷新即可。'}</p>
       <button type="button" id="retry">重新加载</button>
     </div>`;
   const btn = $('#retry');
@@ -270,11 +294,18 @@ function setSync(source, at) {
   const label = {
     network: '实时同步自 GitHub',
     cache: '已同步 · 本地缓存',
+    snapshot: '离线快照',
     stale: '离线显示上次结果'
   }[source] || '已同步';
-  const time = at ? new Date(at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+  const time = at
+    ? new Date(at).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
+    : '';
   el.sync.textContent = time ? `${label} · ${time}` : label;
-  if (el.syncDot) el.syncDot.classList.toggle('stale', source === 'stale');
+
+  if (el.syncDot) {
+    el.syncDot.classList.toggle('stale', source === 'stale' || source === 'snapshot');
+  }
 }
 
 function setCount(n) {
