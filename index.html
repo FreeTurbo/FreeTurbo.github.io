@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07080c">
+
+<title>白给Turbo · 作品集</title>
+<meta name="description" content="白给Turbo 的在线作品集。动画、3D、前端实验，点开就能直接玩。">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="白给Turbo · 作品集">
+<meta property="og:description" content="动画、3D、前端实验，点开就能直接玩。">
+<meta property="og:url" content="https://freeturbo.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236d5efc'/><stop offset='1' stop-color='%2322d3ee'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><text x='50' y='50' font-size='54' font-family='system-ui,sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='central'>T</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="grid-overlay"></div>
+  <div class="vignette"></div>
+</div>
+
+<div class="shell">
+
+  <header class="topbar">
+    <span class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span id="site-brand">白给Turbo</span>
+    </span>
+    <a class="topbar-link" id="site-github" href="https://github.com/FreeTurbo"
+       target="_blank" rel="noopener noreferrer">
+      GitHub
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7 17 17 7M9 7h8v8"/>
+      </svg>
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span class="hero-eyebrow">Portfolio · 实时同步</span>
+      <h1 id="site-name">白给Turbo</h1>
+      <p class="hero-tagline" id="site-tagline">动画 · 3D · 前端实验</p>
+      <p class="hero-bio" id="site-bio"></p>
+
+      <div class="hero-meta">
+        <span class="chip"><b id="stat-count">—</b> 个在线作品</span>
+        <span class="chip">点开即玩，无需下载</span>
+      </div>
+    </section>
+
+    <div class="toolbar" id="toolbar" hidden>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input type="search" id="search" placeholder="搜索作品…" autocomplete="off"
+               aria-label="搜索作品">
+      </label>
+    </div>
+
+    <section class="grid" id="grid" aria-live="polite" aria-busy="false"></section>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-sync">
+      <span class="sync-dot" id="sync-dot" aria-hidden="true"></span>
+      <span id="sync-state">正在同步…</span>
+    </span>
+    <span>共 <b id="foot-count">—</b> 个作品 · 新作品自动上线</span>
+    <span>© <span id="year">2026</span> 白给Turbo</span>
+  </footer>
+
+</div>
+
+<noscript>
+  <div style="position:relative;z-index:2;max-width:40rem;margin:3rem auto;padding:1.5rem;
+              border:1px solid rgba(255,255,255,.1);border-radius:14px;color:#9aa1b6;
+              font-family:system-ui,sans-serif;text-align:center">
+    这个页面需要 JavaScript 才能自动读取作品列表。<br>
+    直接访问 <a href="https://github.com/FreeTurbo?tab=repositories"
+              style="color:#22d3ee">github.com/FreeTurbo</a> 可以看到全部仓库。
+  </div>
+</noscript>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

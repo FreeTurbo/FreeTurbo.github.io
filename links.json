@@ -1,0 +1,70 @@
+{
+  "_说明": {
+    "这个文件是干嘛的": "给自动发现的仓库补充人话标题和介绍。不写也能用，页面上会显示仓库名。",
+    "新建了仓库怎么办": "什么都不用改。仓库开启 Pages 之后，刷新页面就会自动出现（标题默认用仓库名）。想让它好看，再来这里加一条。",
+    "projects 里怎么写": "键 = 仓库名（要和 GitHub 上完全一致，区分大小写），值可以写 title 标题 / description 描述 / tags 标签数组 / tint 卡片主色。",
+    "想隐藏某个仓库": "把仓库名加进下面的 hidden 数组。",
+    "想固定排序": "在 order 数组里按顺序写仓库名，没写进去的自动排在后面（按更新时间）。"
+  },
+
+  "site": {
+    "name": "白给Turbo",
+    "tagline": "动画 · 3D · 前端实验",
+    "bio": "把用 AI 做的东西都丢在这里，点开就能直接玩，不用下载。",
+    "github": "https://github.com/FreeTurbo"
+  },
+
+  "options": {
+    "username": "FreeTurbo",
+    "pagesBase": "https://freeturbo.github.io",
+    "exclude": [],
+    "requirePages": true,
+    "hideForks": true,
+    "cacheMinutes": 5,
+    "newDays": 14,
+    "minProjectsForSearch": 9
+  },
+
+  "order": ["six", "two", "four", "five", "three", "turbo-one"],
+
+  "hidden": [],
+
+  "projects": {
+    "six": {
+      "title": "高斯泼溅模型查看器",
+      "description": "网页端的 3D 高斯泼溅查看器，用 three.js + Spark 渲染手机视频重建出来的真实场景，可以自由旋转、缩放、全屏。",
+      "tags": ["Three.js", "3DGS", "3D 可视化"],
+      "tint": "#8b7cff"
+    },
+    "two": {
+      "title": "AXION VOID X1 概念页",
+      "description": "虚构电竞手柄的产品概念页。Three.js 程序化建模的可交互 3D 手柄，带爆炸结构拆分、四套实时配色和全套滚动动效。",
+      "tags": ["Three.js", "产品概念", "3D"],
+      "tint": "#22d3ee"
+    },
+    "four": {
+      "title": "白给Turbo 动画作品集",
+      "description": "动画作者白给Turbo 的个人作品集，收录四支 3D 动画短片，可以直接在网页上播放，并附完整制作流程。",
+      "tags": ["动画", "作品集", "视频"],
+      "tint": "#f472b6"
+    },
+    "five": {
+      "title": "线上选宿舍系统",
+      "description": "模拟大学新生线上选宿舍的单页演示：信息确认 → 选楼栋 → 选房间床位 → 提交确认，四步向导。",
+      "tags": ["交互演示", "单页"],
+      "tint": "#34d399"
+    },
+    "three": {
+      "title": "作品集 · 单文件版",
+      "description": "把整个作品集塞进一个 HTML 文件的版本，零外部依赖，动效和主题切换都做完了，作品素材还在往里填。",
+      "tags": ["单文件", "动效"],
+      "tint": "#fbbf24"
+    },
+    "turbo-one": {
+      "title": "滑动映像",
+      "description": "个人影像展示站，按地点和时间滑动浏览照片。站先搭好了，影像内容还在筹备。",
+      "tags": ["影像", "个人站"],
+      "tint": "#60a5fa"
+    }
+  }
+}
