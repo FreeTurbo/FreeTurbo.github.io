@@ -11,7 +11,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'links.json'
+      # 只有这两样会改变快照内容。links.json 改的是标题/排序/配色，
+      # 不影响仓库数据本身，所以不列进来，免得白跑一次。
       - 'tools/snapshot.mjs'
       - '.github/workflows/refresh-repos.yml'
 
