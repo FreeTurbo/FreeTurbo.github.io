@@ -16,7 +16,7 @@
  *   （注意：本机若开着加速器，Node 可能因证书问题失败，加 --use-system-ca）
  */
 
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -74,15 +74,36 @@ const kept = raw.filter((r) => {
 
 const repos = kept.map((r) => Object.fromEntries(FIELDS.map((k) => [k, r[k] ?? null])));
 
-const payload = {
-  generated_at: new Date().toISOString(),
-  user: USER,
-  count: repos.length,
-  repos
-};
+/**
+ * 仓库数据没变就一个字节都不写。
+ *
+ * 为什么必须这么做：generated_at 是当前时间，只要写文件就必然和上一版不同，
+ * 于是 workflow 里的 `git diff --quiet` 永远判定为「有变化」，
+ * 每天都会产生一次无意义的自动提交，并连带触发一次 Pages 重建。
+ * 所以这里先比对 repos 数组本身，没变就直接退出。
+ */
+let prev = null;
+try {
+  prev = JSON.parse(await readFile(OUT, 'utf8'));
+} catch { /* 首次生成，没有旧文件 */ }
 
-await writeFile(OUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+const unchanged = prev && JSON.stringify(prev.repos) === JSON.stringify(repos);
 
-console.log(`已写入 ${OUT}`);
-console.log(`共 ${repos.length} 个仓库，其中开启 Pages 的 ${repos.filter((r) => r.has_pages).length} 个`);
+if (unchanged) {
+  console.log('仓库数据没有变化，保持原文件不动（不产生提交）');
+} else {
+  // generated_at 的含义是「这份数据是什么时候的」，只有数据变了才刷新
+  const payload = {
+    generated_at: new Date().toISOString(),
+    user: USER,
+    count: repos.length,
+    repos
+  };
+
+  await writeFile(OUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+
+  console.log(`已写入 ${OUT}`);
+  console.log(`共 ${repos.length} 个仓库，其中开启 Pages 的 ${repos.filter((r) => r.has_pages).length} 个`);
+}
+
 if (skipped.length) console.log(`已排除导航页自身：${skipped.join(', ')}`);
